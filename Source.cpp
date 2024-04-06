@@ -85,6 +85,7 @@ int main(void) {
 
 	Shader phongShader("./src/shaders/phong.vert", "./src/shaders/phong.frag");
 
+
 	//Setup IMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -92,6 +93,63 @@ int main(void) {
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
+
+
+#pragma region FrameBuffer
+
+	Shader FBO_Shader("./src/shaders/fbo.vert", "./src/shaders/fbo_edge.frag");
+	FBO_Shader.Activate();
+	glUniform1i(glGetUniformLocation(FBO_Shader.ID, "screen_texture"), 0);
+
+	float FBO_Vertices[] = {
+		// Coords    // texCoords
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f,
+
+		 1.0f,  1.0f,  1.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		-1.0f,  1.0f,  0.0f, 1.0f
+	};
+
+	GLuint f_VAO, f_VBO;
+	glGenVertexArrays(1, &f_VAO);
+	glGenBuffers(1, &f_VBO);
+	glBindVertexArray(f_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, f_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(FBO_Vertices), &FBO_Vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	GLuint FBO;
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+	GLuint FBOTexture;
+	glGenTextures(1, &FBOTexture);
+	glBindTexture(GL_TEXTURE_2D, FBOTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOTexture,0);
+
+
+	GLuint RBO;
+	glGenRenderbuffers(1, &RBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+	auto FBO_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (FBO_status != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "FrameBuffer Error : " << FBO_status << std::endl;
+	}
+
+#pragma endregion
 	
 	Object Vampire("Vampire");
 	Vampire.AddMesh("src/3dobjects/vampire/vampire.dae");
@@ -121,8 +179,8 @@ int main(void) {
 
 	while (!glfwWindowShouldClose(window))
 	{	
-
 #pragma region Basic OpenGL Setup
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -161,6 +219,13 @@ int main(void) {
 #pragma endregion
 
 		Vampire.Display(camera, phongShader);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		FBO_Shader.Activate();
+		glBindVertexArray(f_VAO);
+		glDisable(GL_DEPTH_TEST);
+		glBindTexture(GL_TEXTURE_2D, FBOTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 #pragma region ImGui Window
 		if (true) {

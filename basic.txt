@@ -1,0 +1,101 @@
+float3 mean[4] = {
+	{0, 0, 0},
+	{0, 0, 0},
+	{0, 0, 0},
+	{0, 0, 0}
+};
+
+float3 sigma[4] = {
+	{0, 0, 0},
+	{0, 0, 0},
+	{0, 0, 0},
+	{0, 0, 0}
+};
+
+float2 offsets[4] = {{-RADIUS.x, -RADIUS.y}, {-RADIUS.x, 0}, {0, -RADIUS.y}, {0, 0}};
+
+float2 pos;
+float3 col;
+
+float gradientX = 0;
+float gradientY = 0;
+
+float sobelX[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+float sobelY[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+
+int index = 0;
+float2 texelSize = 1.0/VIEWSIZE;
+
+for(int x = -1; x <= 1; x++)
+{
+	for(int y = -1; y <= 1; y++)
+	{
+		if(index == 4)
+		{
+			index++;
+			continue;
+		}
+
+		float2 offset = float2(x, y) * texelSize;
+		float3 pxCol = SceneTextureLookup(UV + offset, 14, false).xyz;
+		float pxLum = dot(pxCol, float3(0.2126, 0.7152, 0.0722));
+
+		gradientX += pxLum * sobelX[index];
+		gradientY += pxLum * sobelY[index];
+
+		index++;
+
+	}
+}
+
+float angle = 0;
+
+if(abs(gradientX) > 0.001)
+{
+	atan(gradientY / gradientX);
+}
+
+float s = sin(angle);
+float c = cos(angle);
+
+for(int i = 0; i < 4; i++)
+{
+	for(int j = 0; j <= RADIUS.x; j++)
+	{
+		for(int k = 0; k <= RADIUS.y; k++)
+		{
+			pos = float2(j, k) + offsets[i];
+			float2 offs = pos * texelSize;
+
+			offs = float2(offs.x * c - offs.y * s, offs.x * s+ offs.y *c);
+
+			float2 uvpos = UV + offs;
+			col = SceneTextureLookup(uvpos, 14, false);
+
+			mean[i] += col;
+
+			sigma[i] += col * col;
+
+		}
+
+	}
+}
+
+float n = (RADIUS.x+1) * (RADIUS.y+1);
+float sigma_f;
+float min = 1;
+
+for(int i = 0; i < 4; i++)
+{
+	mean[i] /= n;
+	sigma[i] = abs(sigma[i] / n - mean[i] * mean[i]);
+	sigma_f = sigma[i].r + sigma[i].g + sigma[i].b;
+
+	if(sigma_f < min)
+		{
+			min = sigma_f;
+			col = mean[i];
+		}
+}
+
+return col;
