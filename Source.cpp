@@ -97,7 +97,7 @@ int main(void) {
 
 #pragma region FrameBuffer
 
-	Shader FBO_Shader("./src/shaders/fbo.vert", "./src/shaders/fbo_edge.frag");
+	Shader FBO_Shader("./src/shaders/fbo.vert", "./src/shaders/fbo_bilateral.frag");
 	FBO_Shader.Activate();
 	glUniform1i(glGetUniformLocation(FBO_Shader.ID, "screen_texture"), 0);
 
@@ -144,10 +144,7 @@ int main(void) {
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
 
-	auto FBO_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (FBO_status != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "FrameBuffer Error : " << FBO_status << std::endl;
-	}
+
 
 #pragma endregion
 	
@@ -171,6 +168,9 @@ int main(void) {
 	static float DiffusePower = 0.2f;
 	static float PointLightRadius = 1.f;
 
+	//Post Processing Effects : 
+	static float GaussianStrength = 4.f;
+	
 	//
 	bool isAnimate = false;
 	int lineNumber = 0;
@@ -213,8 +213,6 @@ int main(void) {
 		glUniform1f(glGetUniformLocation(phongShader.ID, "AmbientPower"), AmbientPower);
 		glUniform1f(glGetUniformLocation(phongShader.ID, "DiffusePower"), DiffusePower);
 		glUniform1f(glGetUniformLocation(phongShader.ID, "PointLightRadius"), PointLightRadius);
-
-		
 		glUniform3f(glGetUniformLocation(phongShader.ID, "Color"), finalMeshColor.x, finalMeshColor.y, finalMeshColor.z);
 #pragma endregion
 
@@ -222,6 +220,7 @@ int main(void) {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		FBO_Shader.Activate();
+		glUniform1f(glGetUniformLocation(FBO_Shader.ID, "GaussianStrength"), GaussianStrength);
 		glBindVertexArray(f_VAO);
 		glDisable(GL_DEPTH_TEST);
 		glBindTexture(GL_TEXTURE_2D, FBOTexture);

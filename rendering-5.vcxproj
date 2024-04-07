@@ -786,6 +786,9 @@
     <None Include="include\glm\gtx\wrap.inl" />
     <None Include="src\shaders\basic.frag" />
     <None Include="src\shaders\basic.vert" />
+    <None Include="src\shaders\fbo.frag" />
+    <None Include="src\shaders\fbo_bilateral.frag" />
+    <None Include="src\shaders\fbo_blur.frag" />
     <None Include="src\shaders\fbo_edge.frag" />
     <None Include="src\shaders\fbo.vert" />
     <None Include="src\shaders\light.frag" />
