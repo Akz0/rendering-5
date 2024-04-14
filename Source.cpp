@@ -53,6 +53,7 @@ int frameCount = 0;
 Camera camera;
 Mouse mouse;
 glm::mat4 model;
+static float PostProcessingOption = 0.0f;
 
 int main(void) {
 	if (!glfwInit())
@@ -85,7 +86,6 @@ int main(void) {
 
 	Shader phongShader("./src/shaders/phong.vert", "./src/shaders/phong.frag");
 
-
 	//Setup IMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -93,7 +93,6 @@ int main(void) {
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
-
 
 #pragma region FrameBuffer
 
@@ -148,10 +147,9 @@ int main(void) {
 
 #pragma endregion
 	
-	Object Vampire("Vampire");
-	Vampire.AddMesh("src/3dobjects/vampire/vampire.dae");
+	Object Vampire("Face");
+	Vampire.AddMesh(NEUTRAL_LOW_RES);
 	Vampire.Load();
-	Vampire.AddBaseMap("src/3dobjects/vampire/vampire.png");
 
 #pragma region Inspector Controls
 	glm::vec3 finalPosition(0.0,0.0,0.0f);
@@ -169,8 +167,8 @@ int main(void) {
 	static float PointLightRadius = 1.f;
 
 	//Post Processing Effects : 
-	static float GaussianStrength = 4.f;
-	
+	float KuwaharaStrength = 3;
+	bool isKuwahara = false;
 	//
 	bool isAnimate = false;
 	int lineNumber = 0;
@@ -220,7 +218,8 @@ int main(void) {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		FBO_Shader.Activate();
-		glUniform1f(glGetUniformLocation(FBO_Shader.ID, "GaussianStrength"), GaussianStrength);
+		glUniform1f(glGetUniformLocation(FBO_Shader.ID, "KuwaharaStrength"), KuwaharaStrength);
+		glUniform1f(glGetUniformLocation(FBO_Shader.ID, "PostProcessingType"), PostProcessingOption);
 		glBindVertexArray(f_VAO);
 		glDisable(GL_DEPTH_TEST);
 		glBindTexture(GL_TEXTURE_2D, FBOTexture);
@@ -247,6 +246,15 @@ int main(void) {
 				ImGui::DragFloat("Ambient Light", &AmbientPower, 0.001, 0.0f, 1.0f);
 				ImGui::DragFloat("Diffuse Light", &DiffusePower, 0.001, 0.0f, 1.0f);
 				ImGui::DragFloat("Point Light Radius", &PointLightRadius, 0.01, 0.1f);
+				ImGui::Spacing();
+				ImGui::Spacing();
+			}
+
+			if (ImGui::CollapsingHeader("Post Processing")) {
+				ImGui::Spacing();
+				ImGui::Spacing();
+				ImGui::SeparatorText("Kuwahara");
+				ImGui::DragFloat("Kuwahara Radius", &KuwaharaStrength, 1, 0.0f,10.f);
 				ImGui::Spacing();
 				ImGui::Spacing();
 			}
@@ -325,6 +333,27 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
 		camera.position -= cameraSpeed * camera.up;
+	}
+
+
+	if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
+	{
+		PostProcessingOption = 0.0f;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_KP_1) == GLFW_PRESS)
+	{
+		PostProcessingOption = 1.0f;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_KP_2) == GLFW_PRESS)
+	{
+		PostProcessingOption = 2.0f;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_KP_3) == GLFW_PRESS)
+	{
+		PostProcessingOption = 3.0f;
 	}
 
 	camera.view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);

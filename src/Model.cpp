@@ -74,77 +74,88 @@ void Object::AddSpecularMap(const char* fileName) {
 }
 
 void Object::Load() {
-    GLuint aPos = 0;
-    GLuint aNormal = 1;
-    GLuint aTexCords = 2;
-    GLuint aTangent = 3;
-    GLuint aBiTangent = 4;
 
-    unsigned int aPosVBO = 0;
-    unsigned int aTexCordsVBO = 0;
-    unsigned int aNormalVBO = 0;
-    unsigned int aTangentVBO = 0;
-    unsigned int aBiTangentVBO = 0;
+    try {
+        GLuint aPos = 0;
+        GLuint aNormal = 1;
+        GLuint aTexCords = 2;
+        GLuint aTangent = 3;
+        GLuint aBiTangent = 4;
 
-    glGenBuffers(1, &aPosVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, aPosVBO);
-    glBufferData(GL_ARRAY_BUFFER, mesh.VertexData.size() * sizeof(float), mesh.VertexData.data(), GL_STATIC_DRAW);
+        unsigned int aPosVBO = 0;
+        unsigned int aTexCordsVBO = 0;
+        unsigned int aNormalVBO = 0;
+        unsigned int aTangentVBO = 0;
+        unsigned int aBiTangentVBO = 0;
 
-    glGenBuffers(1, &aNormalVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, aNormalVBO);
-    glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.normals[0], GL_STATIC_DRAW);
+        glGenBuffers(1, &aPosVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, aPosVBO);
+        glBufferData(GL_ARRAY_BUFFER, mesh.VertexData.size() * sizeof(float), mesh.VertexData.data(), GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+        glGenBuffers(1, &aNormalVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, aNormalVBO);
+        glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.normals[0], GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(aPos);
-    glBindBuffer(GL_ARRAY_BUFFER, aPosVBO);
-    glVertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
 
-    glEnableVertexAttribArray(aNormal);
-    glBindBuffer(GL_ARRAY_BUFFER, aNormalVBO);
-    glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(aPos);
+        glBindBuffer(GL_ARRAY_BUFFER, aPosVBO);
+        glVertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    if (mesh.textureCoords.size() > 0) {
-        glGenBuffers(1, &aTexCordsVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, aTexCordsVBO);
-        glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.textureCoords[0], GL_STATIC_DRAW);
+        glEnableVertexAttribArray(aNormal);
+        glBindBuffer(GL_ARRAY_BUFFER, aNormalVBO);
+        glVertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+        if (mesh.textureCoords.size() > 0) {
+            glGenBuffers(1, &aTexCordsVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, aTexCordsVBO);
+            glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.textureCoords[0], GL_STATIC_DRAW);
+        }
+        if (mesh.tangents.size() > 0) {
+            glGenBuffers(1, &aTangentVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, aTangentVBO);
+            glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.tangents[0], GL_STATIC_DRAW);
+        }
+
+        if (mesh.biTangents.size() > 0) {
+            glGenBuffers(1, &aBiTangentVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, aBiTangentVBO);
+            glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.biTangents[0], GL_STATIC_DRAW);
+        }
+
+        if (mesh.textureCoords.size() > 0) {
+            glEnableVertexAttribArray(aTexCords);
+            glBindBuffer(GL_ARRAY_BUFFER, aTexCordsVBO);
+            glVertexAttribPointer(aTexCords, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+        }
+
+        if (mesh.tangents.size() > 0) {
+            glEnableVertexAttribArray(aTangent);
+            glBindBuffer(GL_ARRAY_BUFFER, aTangentVBO);
+            glVertexAttribPointer(aTangent, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        }
+
+        if (mesh.biTangents.size() > 0) {
+            glEnableVertexAttribArray(aBiTangent);
+            glBindBuffer(GL_ARRAY_BUFFER, aBiTangentVBO);
+            glVertexAttribPointer(aBiTangent, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        }
+
+        throw (1);
     }
-    if (mesh.tangents.size() > 0) {
-        glGenBuffers(1, &aTangentVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, aTangentVBO);
-        glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.tangents[0], GL_STATIC_DRAW);
-    }
+    catch (int a) {
+        std::cerr << "Error while Loading VAO for " << name << std::endl;;
 
-    if (mesh.biTangents.size() > 0) {
-        glGenBuffers(1, &aBiTangentVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, aBiTangentVBO);
-        glBufferData(GL_ARRAY_BUFFER, 3 * mesh.totalPoints * sizeof(float), &mesh.biTangents[0], GL_STATIC_DRAW);
     }
-
-    if (mesh.textureCoords.size() > 0) {
-        glEnableVertexAttribArray(aTexCords);
-        glBindBuffer(GL_ARRAY_BUFFER, aTexCordsVBO);
-        glVertexAttribPointer(aTexCords, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    }
-
-    if (mesh.tangents.size() > 0) {
-        glEnableVertexAttribArray(aTangent);
-        glBindBuffer(GL_ARRAY_BUFFER, aTangentVBO);
-        glVertexAttribPointer(aTangent, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    }
-
-    if (mesh.biTangents.size() > 0) {
-        glEnableVertexAttribArray(aBiTangent);
-        glBindBuffer(GL_ARRAY_BUFFER, aBiTangentVBO);
-        glVertexAttribPointer(aBiTangent, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    }
+  
 }
 
 void Object::Display(Camera camera,Shader shader) {
     shader.Activate();
     CalculateModel();
-
+    //model = glm::rotate(model, glm::radians(1.0f), glm::vec3(0.f, 1.0f, 0.0f));
+    
     baseMap.Load(shader, "baseMap", 0);
     baseMap.Bind();
 

@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 void Texture::Generate(GLuint slot, GLenum pixelType) {
-	GLenum format;
+	GLenum format = GL_RGB;
 	int imageWidth, imageHeight, ColorChannels;
 	stbi_set_flip_vertically_on_load(false);
 	unsigned char* image_data = stbi_load(textureFile, &imageWidth, &imageHeight, &ColorChannels, 0);
@@ -31,7 +31,7 @@ void Texture::Generate(GLuint slot, GLenum pixelType) {
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, format, pixelType, image_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, format, imageWidth, imageHeight, 0, format, pixelType, image_data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	stbi_image_free(image_data);

@@ -28,31 +28,7 @@
 #include "Utilities.h"
 #include "Texture.h"
 
-#define NEUTRAL_LOW_RES "./src/model/neutral.obj"                                      
-#define JAW_OPEN_LOW_RES "./src/low-res-model/Mery_jaw_open.obj"                       
-#define KISS_LOW_RES "./src/low-res-model/Mery_kiss.obj"                                
-#define L_BROW_LOWER_LOW_RES "./src/low-res-model/Mery_l_brow_lower.obj"                
-#define L_BROW_NARROW_LOW_RES "./src/low-res-model/Mery_l_brow_narrow.obj"             
-#define L_BROW_RAISE_LOW_RES "./src/low-res-model/Mery_l_brow_raise.obj"                
-#define LEFT_CLOSED_LOW_RES "./src/low-res-model/Mery_l_eye_closed.obj"                 
-#define L_LOWER_O_LOW_RES "./src/low-res-model/Mery_l_eye_lower_open.obj"               
-#define L_UPPER_O_LOW_RES "./src/low-res-model/Mery_l_eye_upper_open.obj"               
-#define L_NOSE_WRINKLE_LOW_RES "./src/low-res-model/Mery_l_nose_wrinkle.obj"            
-#define L_PUFF_LOW_RES "./src/low-res-model/Mery_l_puff.obj"                            
-#define L_SAD_LOW_RES "./src/low-res-model/Mery_l_sad.obj"                              
-#define L_SMILE_LOW_RES "./src/low-res-model/Mery_l_smile.obj"                          
-#define L_SUCK_LOW_RES "./src/low-res-model/Mery_l_suck.obj"                           
-#define R_BROW_LOWER_LOW_RES "./src/low-res-model/Mery_r_brow_lower.obj"                
-#define R_BROW_NARROW_LOW_RES "./src/low-res-model/Mery_r_brow_narrow.obj"              
-#define R_BROW_RAISE_LOW_RES "./src/low-res-model/Mery_r_brow_raise.obj"                
-#define R_CLOSED_LOW_RES "./src/low-res-model/Mery_r_eye_closed.obj"                     
-#define R_LOWER_O_LOW_RES "./src/low-res-model/Mery_r_eye_lower_open.obj"              
-#define R_UPPER_O_LOW_RES "./src/low-res-model/Mery_r_eye_upper_open.obj"               
-#define R_NOSE_WRINKLE_LOW_RES "./src/low-res-model/Mery_r_nose_wrinkle.obj"            
-#define R_PUFF_LOW_RES "./src/low-res-model/Mery_r_puff.obj"                            
-#define R_SAD_LOW_RES "./src/low-res-model/Mery_r_sad.obj"                              
-#define R_SMILE_LOW_RES "./src/low-res-model/Mery_r_smile.obj"                          
-#define R_SUCK_LOW_RES "./src/low-res-model/Mery_r_suck.obj"                            
+#define NEUTRAL_LOW_RES "src/model/neutral.obj"                                      
 
 class Mesh {
 public:
@@ -92,6 +68,10 @@ public:
         rotation = glm::vec3(0.f, 0.0f, 0.0f);
         scale = glm::vec3(1.f, 1.0f, 1.0f);
     };
+
+    void Rotate(float angle) {
+        rotation = glm::vec3(rotation.x, rotation.y + angle, rotation.y);
+    }
 
     void CalculateModel() {
         model = glm::translate(glm::mat4(1.0f), position);

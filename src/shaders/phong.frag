@@ -59,5 +59,5 @@ vec4 PointLight(float radius){
 }
 
 void main(){
-    FragColor = texture(baseMap,TexCord) * PointLight(PointLightRadius) * LightPower;
+    FragColor = vec4(Color,1.0f) * PointLight(PointLightRadius) * LightPower;
 }
